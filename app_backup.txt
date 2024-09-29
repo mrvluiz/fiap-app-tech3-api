@@ -1,0 +1,182 @@
+import uuid
+import pandas as pd
+import os 
+import time
+import subprocess
+import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
+import shutil
+import json
+import boto3
+import pandas as pd
+import io
+import kaggle
+
+from os import listdir
+from os.path import isfile, join
+from datetime import datetime
+from flask import Flask, jsonify
+from flask_restx import Api, Resource
+
+KAGGLE_DATASET_NAME = 'mrmars1010iphone-customer-reviews-nlp'
+KAGGLE_PATH = 'kaggle-download'
+
+BUCKET_NAME = 'bucket-fiap-tech3-dw'
+BUCKET_PATH_TRAINING = 'ML-TRAINING'
+BUCKET_PATH_TEST = 'ML-TEST'
+
+BUCKET_FOLDER = 'ML'
+CSV_URL = 'httpvitibrasil.cnpuv.embrapa.brdownloadProducao.csv'
+
+
+app  = Flask(__name__)
+app.json.sort_keys = False
+api = Api(app,
+            version='1.0.0',
+            title='API Services TECH-Challenger3 - @mrvluiz',
+            description='API Services TECH-Challenger3 - @mrvluiz',
+            default='Principal'
+            )
+
+
+@api.route(dw-save)
+@api.doc(description=Salva no S3 e Retorna os dados gravados)
+class Producao(Resource)        
+        def get(self)                     
+                result = SaveCSV_DW(BUCKET_NAME, CSV_URL)
+                retorno = []
+                retorno.append({'objeto'result, 'resultado' 'Sucesso'}) 
+                return retorno
+        
+
+@api.route(dw-getstringid)
+@api.doc(description=Obtem do DW os dados gravados)
+class Producao(Resource)        
+        def get(self, id)     
+                result = GetCSV_DW(BUCKET_NAME, id)
+                retorno = []
+                retorno.append({'objeto'result.to_string(), 'resultado' 'Sucesso'}) 
+                return retorno
+
+
+def GetSessionAWS ()
+    session = boto3.Session(aws_access_key_id='ASIAYKRRLZFBWKOHCI35',
+        aws_secret_access_key='caM+CxBhAyX7MiSa3BsEgrAJa7ocf1x0tiN1dFuz',
+        aws_session_token='IQoJb3JpZ2luX2VjEHAaCXVzLXdlc3QtMiJHMEUCIAmMbJ86Kg3qLOkaiHd3AAC7ncngAK4xWdc23cdq875sAiEAwzDrZAGkRF6S77fwoUlnLJbq37PT7KTfD9C0iabjt8qvQIIqfARABGgw1NzI0MDc5MjUwNTkiDM3wDoL0CkQ8JaVLCqRAhojZwq2w1Ohn94SKIaJAgaZZwZU0t3CB+KFDGuFc78fsWCmFEabJzWjVbz61kbiVe86yqkMiVIKTA+ux+DC4dOFcZEe8KMtUHwlVegiLuWP1OxqvBR8Xa7XYGwI9PjHKjSnN2njO1hUipb92lP9s08Bhx7t188N1CmAimgWwHDuWoHj5xf5Lo84z2H+m4hpggnIb7vIoe4im5blS4QtNBkrE6polYeTLYhnpstpMOQeXiPlBEFs60kKwvPtJgGaCt9AfqACqsU3YKfSiAm7pUw4zNF5tfkPfmylV2FVH1BHA7ttft4Da8STW6advejkHHwUzpb71+5TL53YVWEhTd+fOIVGfJu7KWjx4TDx78C3BjqdASk6f0s4oDRlKmdknS4Nea2uTx+bxFlw45DofLODISf8i1OsyPnywzR+esYtrOEnKWbDLyyOjSsMgv+Ef2EIf0vvcyHe4uK+KKCrBYD2j3gZ5tS7xahvRTr6Y7+edJksjjIaBgVJZIRpnkwU26RGvxbLuNwhJcR3kPl0P7F0lyyMUn1AOJc0nNoFd5oksQy7BaOJfdFLwftZZ35SE6Q='
+        )
+    s3 = session.resource('s3')
+    return s3
+
+def Save_File_To_S3 (Bucket_name, file_csv, file_s3)     
+    KeyS3 = file_s3   
+    s3 = GetSessionAWS()
+    with open(file_csv, 'rb') as data        
+        s3.Bucket(Bucket_name).put_object(Key=KeyS3, Body=data, Tagging='KeyStatus=RawParquet') 
+    
+    return KeyS3
+
+
+def SaveCSV_DW (Bucket_name, CSV_URL)        
+    productionData = pd.read_csv(CSV_URL, sep=';')
+    productionData.head()    
+
+    file_csv = datetime.now().strftime('FILE_%Y%m%d_%H%M%S_') + '.csv'
+    productionData.to_csv(file_csv)    
+    KeyS3 = file_csv   
+    s3 = GetSessionAWS()
+
+    with open(file_csv, 'rb') as data        
+        s3.Bucket(Bucket_name).put_object(Key=KeyS3, Body=data, Tagging='KeyStatus=RawParquet') 
+    
+    return KeyS3
+
+
+def GetCSV_DW (Bucket_name, KeyS3)     
+    s3 = GetSessionAWS()   
+    li = []
+    obj = s3.Object(Bucket_name, KeyS3)
+    file =  obj.get()['Body'].read()
+    df = pd.read_csv(io.BytesIO(file))
+    df.head()    
+    return df
+
+
+def ReadCSV ()        
+      
+    s3 = GetSessionAWS()   
+    my_bucket = s3.Bucket(BUCKET_NAME)   
+    
+    li = []
+
+    for my_bucket_object in my_bucket.objects.all()     
+        #obj = s3.Object(BUCKET_NAME, my_bucket_object)
+        content_object =  my_bucket_object.get()['Body'].read()
+        df = pd.read_csv(io.BytesIO(content_object), index_col=None, header=0)
+        li.append(df)
+
+    frame = pd.concat(li, axis=0, ignore_index=True)        
+    frame.head() 
+    frame.to_csv('CSV_CONCAT.csv')    
+
+    return 'ok'
+
+def Read_From_AWS (BucketName, BucketPath)         
+    s3 = GetSessionAWS()   
+    my_bucket = s3.Bucket(BucketName)   
+    
+    #li = []
+
+    for my_bucket_object in my_bucket.objects.all()     
+        #obj = s3.Object(BUCKET_NAME, my_bucket_object)
+
+        splitedKey = my_bucket_object.key.split()
+
+        if splitedKey[0] == BucketPath
+
+            content_object =  my_bucket_object.get()['Body'].read()
+            #df = pd.read_csv(io.BytesIO(content_object), index_col=None, header=0)
+            #li.append(df)
+            df = pd.read_csv(io.BytesIO(content_object))
+            df.head()
+            return pd
+    
+    #frame = pd.concat(li, axis=0, ignore_index=True)        
+    #frame.head() 
+    #frame.to_csv('CSV_CONCAT.csv')
+    
+
+
+def Send_Kaggle_DataSet_To_AWS (DownloadPath, BucketName, BucketPath)     
+    s3 = GetSessionAWS()
+
+    arrayDir =  os.listdir(DownloadPath)
+    for file in arrayDir   
+        file_name, file_ext = os.path.splitext(file)      
+        file_destiny = os.path.join(DownloadPath, file)
+        file_key = file #file_name + datetime.now().strftime('[%Y%m%d_%H%M%S]') + file_ext
+
+        if BucketPath != 
+              file_key =   BucketPath +  + file_key
+
+        with open(file_destiny, 'rb') as data        
+            s3.Bucket(BucketName).put_object(Key=file_key, Body=data, Tagging='KeyStatus=RawParquet') 
+
+
+
+def Download_Kaggle_DataSet (DataSetName, DownloadPath)         
+    kaggle.api.authenticate()
+    kaggle.api.dataset_download_files(DataSetName, path=DownloadPath, unzip=True, force=True)
+  
+
+if __name__ == __main__
+
+    #ReadCSV()
+
+    Download_Kaggle_DataSet(KAGGLE_DATASET_NAME, KAGGLE_PATH)
+
+    Send_Kaggle_DataSet_To_AWS(KAGGLE_PATH, BUCKET_NAME, BUCKET_PATH_TRAINING)
+
+    result = Read_From_AWS(BUCKET_NAME,BUCKET_PATH_TRAINING )
+
+    app.run()
