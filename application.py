@@ -31,7 +31,7 @@ api = Api(app,
             default='Principal'
             )
 
-@api.route("/AWS/salvar/treino")
+@api.route("/AWS/salvar-dataset")
 @api.doc(description="Baixa DataSet do Kaggle, Salva no AWS S3 e Retorna o objeto gravado")
 class Producao(Resource):        
         def post(self):         
@@ -39,19 +39,10 @@ class Producao(Resource):
                 result = Send_DataSet_To_AWS(KAGGLE_PATH, BUCKET_NAME, BUCKET_PATH_TRAINING) 
                 return result
 
-@api.route("/AWS/salvar/teste")
-@api.doc(description="Baixa DataSet do Kaggle, Salva no AWS S3 e Retorna o objeto gravado")
-class Producao(Resource):        
-        def post(self):        
-                Download_Kaggle_DataSet(KAGGLE_DS_MEDICAL_NO_SHOW, KAGGLE_PATH)
-                result = Send_DataSet_To_AWS(KAGGLE_PATH, BUCKET_NAME, BUCKET_PATH_TEST) 
-                return result
-
-
 def GetSessionAWS ():
-    session = boto3.Session(aws_access_key_id='ASIAYKRRLZFBWKOHCI35',
-        aws_secret_access_key='caM+CxBhAyX7MiSa3BsEgrAJa7ocf1x0tiN1dFuz',
-        aws_session_token='IQoJb3JpZ2luX2VjEHAaCXVzLXdlc3QtMiJHMEUCIAmMbJ86Kg3qLOkaiHd3AAC7ncngAK4xWdc23cdq875sAiEAwzDrZAGkRF6S77fwoUlnLJbq37PT7KTfD9C0/iabjt8qvQIIqf//////////ARABGgw1NzI0MDc5MjUwNTkiDM3wD/oL0CkQ8JaVLCqRAhojZwq2w1Ohn94SKIaJAgaZZwZU0t3CB+KFDGuFc78fsWCmFEabJzWjVbz61kbiV/e86yqkMiVIKTA+ux+DC4dOFcZEe8KMtUHwlVegiL/uWP1OxqvBR8Xa7XYGwI9PjHKjSnN2nj/O1hUipb92lP9/s08Bhx7t188N1CmAimgWwHD/uWoHj5xf5Lo84z2H+m4hpggnIb7vIoe4im5blS4QtNBkrE6polYeTLYhnpstpMOQeXiPlBEFs60kKwvPtJgGaCt9AfqACqsU3YKfSiAm7pUw4zNF5tfk/Pfmy/lV2FVH1BHA7ttft4Da8STW6advejkHHwUzpb71+5TL53YVWEhTd+fOIVGfJu7K/Wjx4TDx78C3BjqdASk6f0s4oDRlKmdknS4Nea2uTx+bxFlw45DofLODISf8i1OsyPnywzR+esYtrOEnKWbDLyyOjSsMgv+Ef2EIf0vvcyHe4uK+KKCrBYD2j3gZ5tS7xahvRTr6Y7+edJksjjIaBgVJZIRpnkwU26RGvxbLuNwhJcR3kPl0P7F0lyyMUn1AOJc0nNoFd5oksQy7BaOJfdFLwftZZ35SE6Q='
+    session = boto3.Session(aws_access_key_id='ASIAYKRRLZFBV3JQ5BXU',
+        aws_secret_access_key='9CYFron0dXSocqhSdHvDHKkw770qANWk4dJIa7fj',
+        aws_session_token='IQoJb3JpZ2luX2VjEAQaCXVzLXdlc3QtMiJGMEQCICXiLelMY6WBI2sjQuljJtXihH4j+NJDL/+nHDV/cB0qAiAtgL6WaqlxOow7kTROShXVrE+m1XgqoGrlAElBFgZxpCq0AghNEAEaDDU3MjQwNzkyNTA1OSIM3T/0E82f8V2q5ekDKpECqH87QOlaHPlTeVHCsKTDZhvX3d/YfjGT+PxKTZyiFOZDK3X3EyLisp/1RiyJeCv4oaYSuBrfAn+4FLQ6Br2TYwIbZ0lkx+4YeFeIXSOymioYL26UyIdoPo0I0fbNfK4wY77babIqrSkiYXSE1u36xhaAWIeelh8iNcVDbd+XBaZKI6KLWpzAluqW6XPoQ4FL6EinKp49L5NLRsq2mNHlvzs/I5m4WZoHcHuFLhxkbz+Ciehg/Km0qRy+J00ZSoDky31JwYu21b74mZPzXT9L8K3MRCKUpbyyO6ogKK+tJT2deoOyGeLINtMkDdjBWskIiSP7cg4QdZIcARtvbth3waz5ApdcRlz0UcMjNytW5QA3MKy84bcGOp4B2nvSflkxB3/5Ufz+sJwq5VDpbPeMujGFag4ngUNFY4kJ6JgtGC93ajrbdX0mrRZcn6HEFn8hvzXmJc31a1If7G0Qh/iY1kA8Zax96stLgSEwDJB1OOXOzQH2g/PCQnXlN1L6xWMR/Oip94vG8MXzVfW9cOvgIBr+h32a40Sv/SJRt2ROd9bA+m7S9usqUvoL5oG22z/+IRQn/0Qtm2o='
         )
     s3 = session.resource('s3')
     return s3
@@ -100,10 +91,7 @@ def Download_Kaggle_DataSet (DataSetName, DownloadPath, BucketPath):
 
 if __name__ == "__main__":
 
-
     #result = Download_Kaggle_DataSet(KAGGLE_DATASET_NAME, KAGGLE_PATH, BUCKET_PATH_TEST)
-
     #result = Send_DataSet_To_AWS(KAGGLE_PATH, BUCKET_NAME, BUCKET_PATH_TEST) 
-
 
     app.run()
