@@ -14,8 +14,7 @@ from flask import Flask, jsonify
 from flask_restx import Api, Resource
 
 
-KAGGLE_DS_MEDICAL_NO_SHOW = 'joniarroba/noshowappointments/data'
-KAGGLE_DATASET_NAME = 'gkalpolukcu/knn-algorithm-dataset'
+KAGGLE_DS_MEDICAL_NO_SHOW = 'joniarroba/noshowappointments'
 KAGGLE_PATH = 'kaggle-download'
 
 BUCKET_NAME = 'bucket-fiap-tech3-dw'
@@ -36,7 +35,7 @@ api = Api(app,
 @api.doc(description="Baixa DataSet do Kaggle, Salva no AWS S3 e Retorna o objeto gravado")
 class Producao(Resource):        
         def post(self):         
-                Download_Kaggle_DataSet(KAGGLE_DATASET_NAME, KAGGLE_PATH)
+                Download_Kaggle_DataSet(KAGGLE_DS_MEDICAL_NO_SHOW, KAGGLE_PATH)
                 result = Send_DataSet_To_AWS(KAGGLE_PATH, BUCKET_NAME, BUCKET_PATH_TRAINING) 
                 return result
 
@@ -44,7 +43,7 @@ class Producao(Resource):
 @api.doc(description="Baixa DataSet do Kaggle, Salva no AWS S3 e Retorna o objeto gravado")
 class Producao(Resource):        
         def post(self):        
-                Download_Kaggle_DataSet(KAGGLE_DATASET_NAME, KAGGLE_PATH)
+                Download_Kaggle_DataSet(KAGGLE_DS_MEDICAL_NO_SHOW, KAGGLE_PATH)
                 result = Send_DataSet_To_AWS(KAGGLE_PATH, BUCKET_NAME, BUCKET_PATH_TEST) 
                 return result
 
